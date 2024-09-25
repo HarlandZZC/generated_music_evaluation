@@ -19,6 +19,7 @@ To use the repo, you need to:
 
    ```bash
    conda env create -f music_eval.yaml
+   conda activate music_eval
    ```
 
    If some packages cannot be installed through the YAML file, please download them manually.
