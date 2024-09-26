@@ -7,10 +7,11 @@ from torch import nn
 
 def fad(ref_dataloader, gen_dataloader, device):
     # 1. build and set the model
-    model = torch.hub.load("harritaylor/torchvggish", "vggish", 
-                           device=device, postprocess = False, pretrained=True, preprocess=True, progress=True)
-    model.embeddings = nn.Sequential(*list(model.embeddings.children())[:-1])
-    model.eval() 
+    vggish_model = torch.hub.load("HarlandZZC/torchvggish", "vggish", 
+                           device=device, postprocess = False, pretrained=True, preprocess=True, progress=True,
+                           trust_repo=True)
+    vggish_model.embeddings = nn.Sequential(*list(vggish_model.embeddings.children())[:-1])
+    vggish_model.eval()
 
     # 2. load data to RAM
     def load_data_to_ram(dataloader):
@@ -29,7 +30,8 @@ def fad(ref_dataloader, gen_dataloader, device):
     def extract_embd(model, data_list, sr):
         embd_list = []
         for audio in tqdm(data_list):
-            embd = model.forward(audio.numpy(), sr)
+            with torch.no_grad():
+                embd = model.forward(audio.numpy(), sr)
             if model.device.type == "cuda":
                 embd = embd.cpu()
             embd = embd.detach().numpy() 
@@ -39,20 +41,19 @@ def fad(ref_dataloader, gen_dataloader, device):
 
     ref_sr = ref_dataloader.dataset.sr
     gen_sr = gen_dataloader.dataset.sr
-
-    if not os.path.exists("./temp_data"):
-        os.makedirs("./temp_data")
     
     print("Extracting embeddings for reference data...")
+    if not os.path.exists("./temp_data"):
+        os.makedirs("./temp_data")
     npy_path = "./temp_data/ref_data_embd_for_fad.npy"
     if os.path.exists(npy_path):
         ref_embd_array = np.load(npy_path)
     else:
-        ref_embd_array = extract_embd(model, ref_data_list, ref_sr)
+        ref_embd_array = extract_embd(vggish_model, ref_data_list, ref_sr)
         np.save(npy_path, ref_embd_array)
 
     print("Extracting embeddings for generated data...")
-    gen_embd_array = extract_embd(model, gen_data_list, gen_sr)
+    gen_embd_array = extract_embd(vggish_model, gen_data_list, gen_sr)
 
     # 4. calculate embedding statistics
     def calc_embd_stats(embd_array):

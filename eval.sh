@@ -3,6 +3,7 @@ python eval.py \
     --gen_path ./data_example/gen \
     --output_path ./output \
     --device_id 1 \
-    --batch_size 32 \
+    --batch_size 1 \
     --sample_rate 16000 \
-    --run_fad True
+    --run_fad 1 \
+    --run_kl 0

@@ -6,6 +6,8 @@ import torchaudio
 from torch.utils.data import DataLoader
 from datetime import datetime
 from metrics.fad import fad
+from metrics.kl import kl
+from useful_classes.dataset_template import dataset_template
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -16,7 +18,8 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size for dataloader")
     parser.add_argument("--num_load_workers", type=int, default=8, help="Number of workers for dataloader")
     parser.add_argument("--sample_rate", type=int, default=16000, help="Sample rate for audio files")
-    parser.add_argument("--run_fad", type=bool, default=True, help="Run FAD or not")
+    parser.add_argument("--run_fad", type=int, default=1, help="Run FAD(1) or not(0)")
+    parser.add_argument("--run_kl", type=int, default=1, help="Run KL(1) or not(0)")
 
     args = parser.parse_args()
     ref_path = args.ref_path
@@ -27,32 +30,7 @@ if __name__ == "__main__":
     num_load_workers = args.num_load_workers
     sample_rate = args.sample_rate
     run_fad = args.run_fad
-
-    # a template of dataset for building reference_dataset and generated_dataset
-    class dataset_template(torch.utils.data.Dataset):
-        def __init__(self, datadir, sr):
-            self.datalist = [os.path.join(datadir, x) for x in os.listdir(datadir)]
-            self.datalist = sorted(self.datalist)
-            self.sr = sr
-
-        def __getitem__(self, index):
-            filename = self.datalist[index]
-            waveform = self.read_from_file(filename)
-            return waveform, os.path.basename(filename)
-
-        def __len__(self):
-            return len(self.datalist)
-        
-        def read_from_file(self, audio_file):
-            audio, file_sr = torchaudio.load(audio_file)
-            # resample if needed
-            if file_sr != self.sr:
-                audio = torchaudio.functional.resample(audio, orig_freq=file_sr, new_freq=self.sr)
-            # only use the first channel    
-            audio = audio.squeeze(0)
-            # min-max normalization
-            audio = audio - audio.mean()
-            return audio
+    run_kl = args.run_kl 
 
     # 1. build dataset
     ref_dataset = dataset_template(ref_path, sample_rate)
@@ -68,25 +46,29 @@ if __name__ == "__main__":
     device = torch.device(f"cuda:{device_id}" if torch.cuda.is_available() else "cpu")
 
     # 4. run metrics
-    if run_fad:
+    if run_fad == 1:
         fad_score = fad(ref_dataloader, gen_dataloader, device)
         print(f"FAD score: {fad_score}")
+    
+    if run_kl == 1:
+        kl_score = kl(ref_dataloader, gen_dataloader, device)
+        print(f"KL score: {kl_score}")
 
-    # 5. save output
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
+    # # 5. save output
+    # if not os.path.exists(output_path):
+    #     os.makedirs(output_path)
 
-    # 5.1 add content to output
-    output_list = [ref_path, gen_path]
-    if run_fad:
-        output_list.append(fad_score)
-    else:
-        output_list.append("N/A")
+    # # 5.1 add content to output
+    # output_list = [ref_path, gen_path]
+    # if run_fad == 1:
+    #     output_list.append(fad_score)
+    # else:
+    #     output_list.append("N/A")
 
-    # 5.2 write output to csv
-    current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    csv_filepath = os.path.join(output_path, f"output_{current_time}.csv")
-    with open(csv_filepath, mode="w", newline='', encoding='utf-8') as file:
-        writer = csv.writer(file)
-        writer.writerow(["ref_path", "gen_path", "FAD_score"])
-        writer.writerow(output_list)
+    # # 5.2 write output to csv
+    # current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # csv_filepath = os.path.join(output_path, f"output_{current_time}.csv")
+    # with open(csv_filepath, mode="w", newline='', encoding='utf-8') as file:
+    #     writer = csv.writer(file)
+    #     writer.writerow(["ref_path", "gen_path", "FAD_score"])
+    #     writer.writerow(output_list)
