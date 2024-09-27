@@ -47,28 +47,41 @@ if __name__ == "__main__":
 
     # 4. run metrics
     if run_fad == 1:
+        print("--- Running FAD ---")
         fad_score = fad(ref_dataloader, gen_dataloader, device)
-        print(f"FAD score: {fad_score}")
+        fad_score = round(fad_score, 4)
+        print(f"FAD Score: {fad_score}")
     
     if run_kl == 1:
-        kl_score = kl(ref_dataloader, gen_dataloader, device)
-        print(f"KL score: {kl_score}")
+        print("--- Running KL ---")
+        kl_softmax, kl_sigmoid = kl(ref_dataloader, gen_dataloader, device)
+        kl_softmax = round(kl_softmax, 4)
+        kl_sigmoid = round(kl_sigmoid, 4)
+        print(f"KL Softmax: {kl_softmax}")
+        print(f"KL Sigmoid: {kl_sigmoid}")
 
-    # # 5. save output
-    # if not os.path.exists(output_path):
-    #     os.makedirs(output_path)
+    # 5. save output
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
-    # # 5.1 add content to output
-    # output_list = [ref_path, gen_path]
-    # if run_fad == 1:
-    #     output_list.append(fad_score)
-    # else:
-    #     output_list.append("N/A")
+    # 5.1 add content to output
+    output_list = [ref_path, gen_path]
+    if run_fad == 1:
+        output_list.append(fad_score)
+    else:
+        output_list.append("N/A")
 
-    # # 5.2 write output to csv
-    # current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    # csv_filepath = os.path.join(output_path, f"output_{current_time}.csv")
-    # with open(csv_filepath, mode="w", newline='', encoding='utf-8') as file:
-    #     writer = csv.writer(file)
-    #     writer.writerow(["ref_path", "gen_path", "FAD_score"])
-    #     writer.writerow(output_list)
+    if run_kl == 1:
+        output_list.append(kl_softmax)
+        output_list.append(kl_sigmoid)
+    else:
+        output_list.append("N/A")
+        output_list.append("N/A")
+
+    # 5.2 write output to csv
+    current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    csv_filepath = os.path.join(output_path, f"output_{current_time}.csv")
+    with open(csv_filepath, mode="w", newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(["ref_path", "gen_path", "FAD_score", "KL_softmax", "KL_sigmoid"])
+        writer.writerow(output_list)

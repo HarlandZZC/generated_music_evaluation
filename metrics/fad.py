@@ -47,6 +47,7 @@ def fad(ref_dataloader, gen_dataloader, device):
         os.makedirs("./temp_data")
     npy_path = "./temp_data/ref_data_embd_for_fad.npy"
     if os.path.exists(npy_path):
+        print("Loading previous embeddings extraction results...")
         ref_embd_array = np.load(npy_path)
     else:
         ref_embd_array = extract_embd(vggish_model, ref_data_list, ref_sr)
