@@ -17,7 +17,8 @@ if __name__ == "__main__":
     parser.add_argument("--device_id", type=int, default=0, help="Device id to run the model")
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size for dataloader")
     parser.add_argument("--num_load_workers", type=int, default=8, help="Number of workers for dataloader")
-    parser.add_argument("--sample_rate", type=int, default=16000, help="Sample rate for audio files")
+    parser.add_argument("--sample_rate", type=int, default=16000, help="""It's not the sampling rate of your input audio, 
+                        but the rate to which you want to resample your input audio for evaluation. We support 16k and 32k.""")
     parser.add_argument("--run_fad", type=int, default=1, help="Run FAD(1) or not(0)")
     parser.add_argument("--run_kl", type=int, default=1, help="Run KL(1) or not(0)")
 
