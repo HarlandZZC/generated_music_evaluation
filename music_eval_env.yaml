@@ -103,27 +103,39 @@ dependencies:
   - zstd=1.5.5=hc292b87_2
   - pip:
       - asttokens==2.4.1
+      - audioread==3.0.1
       - cffi==1.17.1
       - decorator==5.1.1
       - exceptiongroup==1.2.2
       - executing==2.1.0
       - ipython==8.18.1
       - jedi==0.19.1
+      - joblib==1.4.2
+      - lazy-loader==0.4
+      - librosa==0.10.2.post1
       - llvmlite==0.43.0
       - matplotlib-inline==0.1.7
+      - msgpack==1.1.0
       - numba==0.60.0
+      - packaging==24.1
       - parso==0.8.4
       - pexpect==4.9.0
+      - platformdirs==4.3.6
+      - pooch==1.8.2
       - prompt-toolkit==3.0.47
       - ptyprocess==0.7.0
       - pure-eval==0.2.3
       - pycparser==2.22
       - pygments==2.18.0
       - resampy==0.4.3
+      - scikit-learn==1.5.2
       - scipy==1.13.1
       - six==1.16.0
       - soundfile==0.12.1
+      - soxr==0.5.0.post1
       - stack-data==0.6.3
+      - threadpoolctl==3.5.0
+      - torchlibrosa==0.1.0
       - tqdm==4.66.5
       - traitlets==5.14.3
       - wcwidth==0.2.13

@@ -2,3 +2,4 @@
 /output
 /data_example
 /temp_data
+**/__pycache__
