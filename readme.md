@@ -2,10 +2,10 @@
 
 This is a repository designed to evaluate the effectiveness of AI-generated music, with extensibility for future metrics. Currently, the integrated evaluation metrics include:
 
-* FAD_score: Frechet Audio Distance score (supporting frequency: any)
+* FAD_score: Frechet Audio Distance score(supporting frequency: any)
 * KL_softmax: Kullback Leibler Divergence Softmax(AudioGen use this formulation) (supporting frequency: 16000, 32000)
 * KL_sigmoid: Kullback Leibler Divergence Sigmoid(For multi-class audio clips, this formulation could be better) (supporting frequency: 16000, 32000)
-* Clap_score: Contrastive Language-Audio Pretraining score  (supporting frequency: 48000)
+* Clap_score: Contrastive Language-Audio Pretraining score(supporting frequency: 48000)
 
 You can adjust the sampling rate of your audio by using the `--{xxx}sample_rate` parameter to resample the audio to different sampling rates. This allows you to evaluate the audio with various metrics at different resolutions, depending on the specific evaluation criteria you are using.
 
@@ -46,3 +46,11 @@ To use the repo, you need to:
    * To save time, when calculating Clap for the first time, we save the features of the text in `./temp_data/text_embd_dict_for_clap.pth`. This way, for subsequent Clap calculations, assuming the text remains unchanged, we can directly load the values from `text_embd_dict_for_clap.pth`.
    * To improve readability, we set all values to display only up to 4 decimal places. If you wish to change this, please modify it in `eval.py`.
    * The audio files corresponding to `ref_path` and `gen_path` must have the same naming!
+   * `--id2text_json_path`should be organized like this:
+  
+      ```json
+      {
+      "file1.wav": "The caption of file1.wav",
+      "file2.wav": "The caption of file2.wav."
+      }
+      ```
