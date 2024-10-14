@@ -51,6 +51,6 @@ To use the repo, you need to:
       ```json
       {
       "file1.wav": "The caption of file1.wav",
-      "file2.wav": "The caption of file2.wav."
+      "file2.wav": "The caption of file2.wav"
       }
       ```
