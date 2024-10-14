@@ -5,7 +5,7 @@ This is a repository designed to evaluate the effectiveness of AI-generated musi
 * FAD_score: Frechet Audio Distance score (supporting frequency: any)
 * KL_softmax: Kullback Leibler Divergence Softmax(AudioGen use this formulation) (supporting frequency: 16000, 32000)
 * KL_sigmoid: Kullback Leibler Divergence Sigmoid(For multi-class audio clips, this formulation could be better) (supporting frequency: 16000, 32000)
-* Clap_score: : Contrastive Language-Audio Pretraining score  (supporting frequency: 48000)
+* Clap_score: Contrastive Language-Audio Pretraining score  (supporting frequency: 48000)
 
 You can adjust the sampling rate of your audio by using the `--{xxx}sample_rate` parameter to resample the audio to different sampling rates. This allows you to evaluate the audio with various metrics at different resolutions, depending on the specific evaluation criteria you are using.
 
