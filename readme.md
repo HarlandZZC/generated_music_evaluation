@@ -46,11 +46,11 @@ To use the repo, you need to:
    * To save time, when calculating Clap for the first time, we save the features of the text in `./temp_data/text_embd_dict_for_clap.pth`. This way, for subsequent Clap calculations, assuming the text remains unchanged, we can directly load the values from `text_embd_dict_for_clap.pth`.
    * To improve readability, we set all values to display only up to 4 decimal places. If you wish to change this, please modify it in `eval.py`.
    * The audio files corresponding to `ref_path` and `gen_path` must have the same naming!
-   * `--id2text_json_path`should be organized like this:
+   * The file names in `ref_path` and `gen_path` only need to have matching numerical parts(but need to be unique). The code will automatically pair files with the same numerical part in their names and use this numerical part as their ID. For example, `123_ref.wav` in `ref_path` and `123_gen.wav` in `gen_path` will be considered corresponding files, with `123` serving as their common ID.
+   * `--id2text_csv_path`should be organized like this:
   
-      ```json
-      {
-      "file1.wav": "The caption of file1.wav",
-      "file2.wav": "The caption of file2.wav"
-      }
+      ```csv
+      ids,descri
+      "123","caption for 123."
+      "456","caption for 456."
       ```

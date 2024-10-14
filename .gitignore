@@ -1,5 +1,6 @@
 /.vscode
 /output
+/data
 /data_example
 /temp_data
 **/__pycache__

@@ -1,9 +1,7 @@
 import os
 import csv
-import json
 import argparse
 import torch
-import torchaudio
 from torch.utils.data import DataLoader
 from datetime import datetime
 from metrics.fad import fad
@@ -15,7 +13,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--ref_path", type=str, default="./data_example/ref", help="Path to the reference audio files")
     parser.add_argument("--gen_path", type=str, default="./data_example/gen", help="Path to the generated audio files")
-    parser.add_argument("--id2text_json_path", type=str, default="./data_example/id2text.json", help="Path to the id2text json file")
+    parser.add_argument("--id2text_csv_path", type=str, default="./data_example/id2text.csv", help="Path to the id2text csv file")
     parser.add_argument("--output_path", type=str, default="./output", help="Path to save the output files")
     parser.add_argument("--device_id", type=int, default=0, help="Device id to run the model")
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size for dataloader")
@@ -31,7 +29,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     ref_path = args.ref_path
     gen_path = args.gen_path
-    id2text_json_path = args.id2text_json_path
+    id2text_csv_path = args.id2text_csv_path
     output_path = args.output_path
     device_id = args.device_id
     batch_size = args.batch_size
@@ -49,14 +47,23 @@ if __name__ == "__main__":
     ref_dataset = dataset_template(ref_path)
     gen_dataset = dataset_template(gen_path)
     #1.2 build id2text
-    with open(id2text_json_path, 'r', encoding='utf-8') as id2text_json:
-        id2text = json.load(id2text_json) 
+    id2text = {}
+    with open(id2text_csv_path, 'r', encoding='utf-8') as csv_file:
+        reader = csv.DictReader(csv_file)
+        for row in reader:
+            id2text[row['ids']] = row['descri']
 
     # 2. build dataloader
     ref_dataloader = DataLoader(ref_dataset, batch_size=batch_size, 
                                       num_workers=num_load_workers, shuffle=False)
     gen_dataloader = DataLoader(gen_dataset, batch_size=batch_size, 
                                       num_workers=num_load_workers, shuffle=False)
+    ref_idlist = getattr(ref_dataset, 'idlist', None)
+    gen_idlist = getattr(gen_dataset, 'idlist', None)
+    if ref_idlist == gen_idlist:
+        print("ref_dataloader and gen_dataloader have the same idlist.")
+    else:
+        raise ValueError("ref_dataloader and gen_dataloader have different idlist.")
 
     # 3. set device
     device = torch.device(f"cuda:{device_id}" if torch.cuda.is_available() else "cpu")
