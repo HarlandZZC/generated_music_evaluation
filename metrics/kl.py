@@ -1,37 +1,32 @@
 import os
 import pickle
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import numpy as np
-from torchlibrosa.stft import Spectrogram, LogmelFilterBank
-from torchlibrosa.augmentation import SpecAugmentation
+import torchaudio
 from tqdm import tqdm
 
-def kl(ref_dataloader, gen_dataloader, device):
+def kl(ref_dataloader, gen_dataloader, origin_sr, kl_sr, device):
     # 1. build and set the model
-    ref_sr = ref_dataloader.dataset.sr
-    gen_sr = gen_dataloader.dataset.sr
-
-    if ref_sr == gen_sr == 16000:
+    if kl_sr == 16000:
         mel_model = torch.hub.load("HarlandZZC/torchcnn14", "cnn14", 
-                            device=device, features_list=["2048", "logits"], sample_rate = ref_sr, 
+                            device=device, features_list=["2048", "logits"], sample_rate = 16000, 
                             window_size=512, hop_size=160, mel_bins=64, fmin=50, fmax=8000, classes_num=527,
                             trust_repo=True)
-    elif ref_sr == gen_sr == 32000:
+    elif kl_sr == 32000:
         mel_model = torch.hub.load("HarlandZZC/torchcnn14", "cnn14", 
-                            device=device, features_list=["2048", "logits"], sample_rate = ref_sr, 
+                            device=device, features_list=["2048", "logits"], sample_rate = 32000, 
                             window_size=1024, hop_size=320, mel_bins=64, fmin=50, fmax=14000, classes_num=527,
                             trust_repo=True)
     else:
-        print("Sample rate not supported!")
+        raise ValueError("Setted KL sample rate is not supported!")
     mel_model.eval()
     
     # 2. extract features for data
-    def extract_feat(dataloader, model, device):
+    def extract_feat(dataloader, model):
         out = None
         out_meta = None
         for waveform, filename in tqdm(dataloader):
+            waveform = torchaudio.functional.resample(waveform, orig_freq=origin_sr, new_freq=kl_sr) 
+            waveform = waveform - waveform.mean(dim=1, keepdim=True)
             meta_dict = {"file_path_": filename,}
             with torch.no_grad():
                 feat_dict = model(waveform)
@@ -50,18 +45,18 @@ def kl(ref_dataloader, gen_dataloader, device):
     print("Extracting features for reference data...")
     if not os.path.exists("./temp_data"):
         os.makedirs("./temp_data")
-    pkl_path = "./temp_data/ref_data_feat_for_kl.pkl"
+    pkl_path = f"./temp_data/ref_data_feat_for_kl_{kl_sr}.pkl"
     if os.path.exists(pkl_path):
         print("Loading previous feature extraction results...")
         with open(pkl_path, "rb") as f:
-            ref_feat_dict = pickle.load(f)
+            ref_feat_dict = pickle.load(f) 
     else:
-        ref_feat_dict = extract_feat(ref_dataloader, mel_model, device)
+        ref_feat_dict = extract_feat(ref_dataloader, mel_model)
         with open(pkl_path, "wb") as f:
              pickle.dump(ref_feat_dict, f)
     
     print("Extracting features for generated data...")
-    gen_feat_dict = extract_feat(gen_dataloader, mel_model, device)
+    gen_feat_dict = extract_feat(gen_dataloader, mel_model)
 
     # 3. Calculate KL divergence
     def calc_kl(feat_dict_1, feat_dict_2, feat_layer_name):
@@ -113,5 +108,3 @@ def kl(ref_dataloader, gen_dataloader, device):
 
     # 4. return KL divergence
     return kl_softmax, kl_sigmoid
-
-

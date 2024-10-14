@@ -1,11 +1,12 @@
 import torch
 import os
 import numpy as np
+import torchaudio
 from scipy import linalg
 from tqdm import tqdm
 from torch import nn
 
-def fad(ref_dataloader, gen_dataloader, device):
+def fad(ref_dataloader, gen_dataloader, origin_sr, fad_sr, device):
     # 1. build and set the model
     vggish_model = torch.hub.load("HarlandZZC/torchvggish", "vggish", 
                            device=device, postprocess = False, pretrained=True, preprocess=True, progress=True,
@@ -17,7 +18,9 @@ def fad(ref_dataloader, gen_dataloader, device):
     def load_data_to_ram(dataloader):
         data_list = []
         for batch in tqdm(dataloader):
-            for i in range(len(batch[0])):
+            batch[0] = torchaudio.functional.resample(batch[0], orig_freq=origin_sr, new_freq=fad_sr)
+            batch[0] = batch[0] - batch[0].mean(dim=1, keepdim=True)
+            for i in range(len(batch[0])): 
                 data_list.append((batch[0][i])) 
         return data_list
     
@@ -39,22 +42,19 @@ def fad(ref_dataloader, gen_dataloader, device):
         embd_array = np.concatenate(embd_list, axis=0)
         return embd_array
 
-    ref_sr = ref_dataloader.dataset.sr
-    gen_sr = gen_dataloader.dataset.sr
-    
     print("Extracting embeddings for reference data...")
     if not os.path.exists("./temp_data"):
         os.makedirs("./temp_data")
-    npy_path = "./temp_data/ref_data_embd_for_fad.npy"
+    npy_path = f"./temp_data/ref_data_embd_for_fad_{fad_sr}.npy"
     if os.path.exists(npy_path):
         print("Loading previous embeddings extraction results...")
         ref_embd_array = np.load(npy_path)
     else:
-        ref_embd_array = extract_embd(vggish_model, ref_data_list, ref_sr)
+        ref_embd_array = extract_embd(vggish_model, ref_data_list, fad_sr)
         np.save(npy_path, ref_embd_array)
 
     print("Extracting embeddings for generated data...")
-    gen_embd_array = extract_embd(vggish_model, gen_data_list, gen_sr)
+    gen_embd_array = extract_embd(vggish_model, gen_data_list, fad_sr)
 
     # 4. calculate embedding statistics
     def calc_embd_stats(embd_array):
