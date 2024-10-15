@@ -17,9 +17,9 @@ def fad(ref_dataloader, gen_dataloader, origin_sr, fad_sr, device):
     # 2. load data to RAM
     def load_data_to_ram(dataloader):
         data_list = []
-        for batch in tqdm(dataloader):
+        for batch in tqdm(dataloader): 
             batch[0] = torchaudio.functional.resample(batch[0], orig_freq=origin_sr, new_freq=fad_sr)
-            batch[0] = batch[0] - batch[0].mean(dim=1, keepdim=True)
+            batch[0] = batch[0] - batch[0].mean(dim=1, keepdim=True) 
             for i in range(len(batch[0])): 
                 data_list.append((batch[0][i])) 
         return data_list
@@ -100,7 +100,7 @@ def fad(ref_dataloader, gen_dataloader, origin_sr, fad_sr, device):
         tr_covmean = np.trace(covmean)
         return diff.dot(diff) + np.trace(sigma1) + np.trace(sigma2) - 2 * tr_covmean
     
-    fad_score = calc_fad(gen_mu, gen_sigma, ref_mu, ref_sigma)
+    fad_score = calc_fad(gen_mu, gen_sigma, ref_mu, ref_sigma) 
 
     # 6. return FAD score
     return fad_score
