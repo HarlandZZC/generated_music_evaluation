@@ -45,11 +45,11 @@ To use the repo, you need to:
    * To save time, when calculating KL for the first time, we save the features of the ref_data in `./temp_data/ref_data_feat_for_kl_{kl_sr}.pkl`. This way, for subsequent KL calculations, assuming the ref_data remains unchanged, we can directly load the values from `ref_data_feat_for_kl_{kl_sr}.pkl`.
    * To save time, when calculating Clap for the first time, we save the features of the text in `./temp_data/text_embd_dict_for_clap.pth`. This way, for subsequent Clap calculations, assuming the text remains unchanged, we can directly load the values from `text_embd_dict_for_clap.pth`.
    * To improve readability, we set all values to display only up to 4 decimal places. If you wish to change this, please modify it in `eval.py`.
-   * The file names in `ref_path` and `gen_path` only need to have matching numerical parts(but need to be unique). The code will automatically pair files with the same numerical part in their names and use this numerical part as their ID. For example, `123_ref.wav` in `ref_path` and `123_gen.wav` in `gen_path` will be considered corresponding files, with `123` serving as their common ID.
+   * The corresponding files inside `ref_path` and `gen_path` should have consistent naming. For example, `123abc.wav` in `ref_path` and `123abc.wav` in `gen_path` will be considered corresponding files, with `123abc` serving as their common ID.
    * `--id2text_csv_path`should be organized like this:
   
       ```csv
       ids,descri
-      "123","caption for 123."
-      "456","caption for 456."
+      "123abc","caption for 123."
+      "456def","caption for 456."
       ```
