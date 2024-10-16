@@ -8,7 +8,7 @@ class dataset_template(torch.utils.data.Dataset):
     def __init__(self, datadir):
         self.datalist = [os.path.join(datadir, x) for x in os.listdir(datadir)] 
         self.idlist = [os.path.basename(x) for x in self.datalist]
-        self.idlist = [os.path.splitext(x)[0] for x in self.idlist]
+        self.idlist = [x.rpartition('.')[0] for x in self.idlist] 
         self.idlist = [re.sub(r'\D', '', x) for x in self.idlist]
         self.idlist, self.datalist = zip(*sorted(zip(self.idlist, self.datalist))) 
 
